@@ -1,75 +1,94 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify
 import pika
 import json
 import datetime
+import os
 
 app = Flask(__name__)
-app.secret_key = 'segredo_rapido'
 
 # SEU URL DO RABBITMQ
 RABBITMQ_URL = 'amqps://odxnwdwz:ud16l2oiHhUDEqOOISGgOcTm9jvv2Lum@jackal.rmq.cloudamqp.com/odxnwdwz'
 
-# Catálogo com Capas e Duração Ajustada
-MUSICAS = {
-    '1': {
-        'titulo': 'Bohemian Rhapsody',
-        'artista': 'Queen',
-        'duracao': 10,
-        'capa': 'https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody.png'
+# Filas v2
+FILA_TOCADOR = 'fila_tocador_v2' 
+FILA_HISTORICO = 'fila_historico_v2'
+
+# CATÁLOGO
+MUSICAS = [
+    {
+        'id': '1', 'titulo': 'Bohemian Rhapsody', 'artista': 'Queen', 
+        'duracao': 355, 'genero': 'Rock', 'views': 1500000,
+        'capa': 'https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody.png', 'arquivo': 'bohemian.mp3' 
     },
-    '2': {
-        'titulo': 'Shape of You',
-        'artista': 'Ed Sheeran',
-        'duracao': 5,
-        'capa': 'https://upload.wikimedia.org/wikipedia/en/b/b4/Shape_Of_You_%28Official_Single_Cover%29.png'
+    {
+        'id': '2', 'titulo': 'Shape of You', 'artista': 'Ed Sheeran', 
+        'duracao': 233, 'genero': 'Pop', 'views': 2300000,
+        'capa': 'https://upload.wikimedia.org/wikipedia/en/4/45/Divide_cover.png', 'arquivo': 'shape.mp3'
     },
-    '3': {
-        'titulo': 'Hotel California',
-        'artista': 'Eagles',
-        'duracao': 8,
-        'capa': 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg'
+    {
+        'id': '3', 'titulo': 'Hotel California', 'artista': 'Eagles', 
+        'duracao': 390, 'genero': 'Rock', 'views': 900000,
+        'capa': 'https://upload.wikimedia.org/wikipedia/en/4/49/Hotelcalifornia.jpg', 'arquivo': 'hotel.mp3'
     },
-    '4': {
-        'titulo': 'Blinding Lights',
-        'artista': 'The Weeknd',
-        'duracao': 6,
-        'capa': 'https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png'
+    {
+        'id': '4', 'titulo': 'Blinding Lights', 'artista': 'The Weeknd', 
+        'duracao': 200, 'genero': 'Pop', 'views': 1800000,
+        'capa': 'https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png', 'arquivo': 'blinding.mp3'
     }
-}
+]
 
 def enviar_para_fila(mensagem):
     try:
         params = pika.URLParameters(RABBITMQ_URL)
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
-        channel.queue_declare(queue='fila_tocador')
-        
-        channel.basic_publish(exchange='',
-                              routing_key='fila_tocador',
-                              body=json.dumps(mensagem))
+        channel.queue_declare(queue=FILA_TOCADOR)
+        channel.basic_publish(exchange='', routing_key=FILA_TOCADOR, body=json.dumps(mensagem))
         connection.close()
     except Exception as e:
-        print(f"Erro de conexão: {e}")
+        print(f"Erro RabbitMQ: {e}")
 
 @app.route('/')
 def index():
-    return render_template('index.html', musicas=MUSICAS)
+    termo_busca = request.args.get('q', '').lower()
+    
+    if termo_busca:
+        resultados = [m for m in MUSICAS if termo_busca in m['titulo'].lower() or termo_busca in m['artista'].lower()]
+        return render_template('index.html', secoes={'🔍 Resultados da Busca': resultados}, busca=termo_busca)
 
-@app.route('/play/<id>')
-def play(id):
-    musica = MUSICAS.get(id)
+    # Lógica das Seções
+    mais_tocadas = sorted(MUSICAS, key=lambda x: x['views'], reverse=True)[:4]
+    rock = [m for m in MUSICAS if m['genero'] == 'Rock']
+    pop = [m for m in MUSICAS if m['genero'] == 'Pop']
+
+    secoes = {
+        '🔥 Mais Tocadas': mais_tocadas,
+        '🎸 Rock Clássico': rock,
+        '🎉 Pop Hits': pop
+    }
+
+    return render_template('index.html', secoes=secoes, busca='')
+
+@app.route('/api/trigger_play', methods=['POST'])
+def trigger_play():
+    data = request.json
+    musica_id = data.get('id')
+    # AQUI: Pega o usuário que veio do HTML. Se não vier, usa 'Anônimo'
+    nome_usuario = data.get('usuario', 'Anônimo') 
+    
+    musica = next((m for m in MUSICAS if m['id'] == musica_id), None)
+    
     if musica:
         msg = {
             'musica': musica['titulo'],
             'artista': musica['artista'],
-            'duracao_simulada': musica['duracao'],
-            'usuario': 'Samuel',
+            'duracao_simulada': 5, 
+            'usuario': nome_usuario, # Usa o nome dinâmico
             'timestamp': str(datetime.datetime.now())
         }
         enviar_para_fila(msg)
-        flash(f"Reproduzindo: {musica['titulo']}")
-    
-    return redirect(url_for('index'))
+        return jsonify({"status": "enviado"})
+    return jsonify({"status": "erro"}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)

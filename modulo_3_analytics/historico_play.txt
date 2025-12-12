@@ -11,3 +11,13 @@
 [2025-12-12 00:34:57] Usuário: Samuel | Ouviu: Hotel California
 [2025-12-12 00:36:14] Usuário: Samuel | Ouviu: Bohemian Rhapsody
 [2025-12-12 00:36:19] Usuário: Samuel | Ouviu: Shape of You
+[14:35:39] User: Samuel Admin | Music: Bohemian Rhapsody
+[15:22:19] User: Samuel Admin | Music: Bohemian Rhapsody
+[15:22:43] User: Samuel Admin | Music: Blinding Lights
+[15:23:41] User: Samuel Admin | Music: Shape of You
+[15:24:37] User: Samuel Admin | Music: Bohemian Rhapsody
+[15:24:53] User: Samuel Admin | Music: Hotel California
+[15:25:03] User: Samuel Admin | Music: Blinding Lights
+[15:28:26] User: Maria (Mobile) | Music: Shape of You
+[15:29:00] User: João (PC) | Music: Bohemian Rhapsody
+[15:29:25] User: Visitante | Music: Bohemian Rhapsody
