@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Spotipy Distribuído</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; text-align: center; }
+        .container { max-width: 600px; margin: 50px auto; }
+        .card { background: #282828; padding: 20px; margin: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { background-color: #1DB954; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; font-weight: bold; }
+        .btn:hover { background-color: #1ed760; }
+        .flash { color: #1DB954; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎧 Spotipy System</h1>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+
+        {% for id, musica in musicas.items() %}
+        <div class="card">
+            <div style="text-align: left;">
+                <h3>{{ musica.titulo }}</h3>
+                <p>{{ musica.artista }}</p>
+            </div>
+            <a href="/play/{{ id }}" class="btn">▶ PLAY</a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
