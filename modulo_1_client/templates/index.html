@@ -2,33 +2,60 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Spotipy Distribuído</title>
+    <title>Spotipy Premium</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; }
-        .container { max-width: 600px; margin: 50px auto; }
-        .card { background: #282828; padding: 20px; margin: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .btn { background-color: #1DB954; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; font-weight: bold; }
-        .btn:hover { background-color: #1ed760; }
-        .flash { color: #1DB954; margin-bottom: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
+        h1 { text-align: center; color: #1DB954; font-size: 3em; margin-bottom: 30px; }
+        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 1000px; margin: 0 auto; }
+        
+        .card { 
+            background: #181818; 
+            width: 200px; 
+            padding: 20px; 
+            border-radius: 8px; 
+            transition: background 0.3s; 
+            text-align: center;
+        }
+        .card:hover { background: #282828; }
+        
+        img { width: 100%; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 15px; }
+        
+        h3 { font-size: 1.1em; margin: 10px 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        p { color: #b3b3b3; font-size: 0.9em; margin: 0 0 20px 0; }
+        
+        .btn { 
+            background-color: #1DB954; color: black; border: none; 
+            padding: 12px 30px; border-radius: 50px; cursor: pointer; 
+            text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+            display: inline-block; transition: transform 0.1s;
+        }
+        .btn:hover { transform: scale(1.05); background-color: #1ed760; }
+        .btn:active { transform: scale(0.95); }
+
+        .flash { 
+            background-color: #1DB954; color: black; text-align: center; 
+            padding: 15px; border-radius: 5px; margin-bottom: 20px; font-weight: bold;
+            animation: fadeout 4s forwards;
+        }
+        @keyframes fadeout { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; display: none;} }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎧 Spotipy System</h1>
-        
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash">{{ messages[0] }}</div>
-            {% endif %}
-        {% endwith %}
+    <h1>🎧 Spotipy <span style="font-weight:lighter; font-size:0.5em; color:white;">Distributed</span></h1>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash">🚀 {{ messages[0] }}</div>
+        {% endif %}
+    {% endwith %}
 
+    <div class="container">
         {% for id, musica in musicas.items() %}
         <div class="card">
-            <div style="text-align: left;">
-                <h3>{{ musica.titulo }}</h3>
-                <p>{{ musica.artista }}</p>
-            </div>
-            <a href="/play/{{ id }}" class="btn">▶ PLAY</a>
+            <img src="{{ musica.capa }}" alt="Capa">
+            <h3>{{ musica.titulo }}</h3>
+            <p>{{ musica.artista }}</p>
+            <a href="/play/{{ id }}" class="btn">Play</a>
         </div>
         {% endfor %}
     </div>
